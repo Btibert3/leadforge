@@ -9,6 +9,7 @@ implemented; the ``student_public`` snapshot-safe export lands in LTV-Pn.4c.
 
 from __future__ import annotations
 
+import dataclasses
 import random
 from typing import TYPE_CHECKING, Any
 
@@ -58,12 +59,17 @@ class LifecycleScheme:
         vocabularies (``market.icp_industries`` / ``market.geographies``); a
         ``None`` narrative falls back to the built-in procurement-ICP defaults.
 
-        Difficulty (tracked, not silent): ``config.difficulty`` does not yet
-        scale the *simulation* — every tier yields the same world — so harder
-        tiers differ only in snapshot distortions (resolved from the recipe
-        profile in ``LTV-Po`` and threaded into the snapshot builders).
-        Simulation-level difficulty scaling is deferred (issue #129).
+        Difficulty (``LTV-Po.2b``): ``config.difficulty`` resolves — via the
+        shared :func:`leadforge.core.difficulty.resolve_difficulty_params` — into
+        :class:`DifficultyParams` read from the recipe's
+        ``difficulty_profiles.yaml``, which the snapshot builders apply as
+        feature distortions (noise / missingness / outliers; targets exempt).
+        The resolved params ride on the returned bundle's ``spec.config`` so
+        :meth:`write_bundle` picks them up.  Difficulty does NOT yet scale the
+        *simulation* — every tier yields the same underlying world — so
+        simulation-level scaling remains deferred (issue #129).
         """
+        from leadforge.core.difficulty import resolve_difficulty_params
         from leadforge.core.exceptions import InvalidConfigError
         from leadforge.core.models import WorldBundle, WorldSpec
         from leadforge.core.rng import RNGRoot
@@ -84,6 +90,14 @@ class LifecycleScheme:
                 "config-driven forward windows are not yet supported (the snapshot builder "
                 "exports the fixed set).  Use the default until that wiring lands."
             )
+
+        # Resolve difficulty → DifficultyParams (snapshot distortions) and carry
+        # them on config so the returned spec + write_bundle see them.  The
+        # lead-scoring-only category-latent correlations (2nd tuple element) are
+        # unused here.  Simulation-level scaling stays deferred (issue #129).
+        difficulty_params, _ = resolve_difficulty_params(config)
+        if difficulty_params is not None:
+            config = dataclasses.replace(config, difficulty_params=difficulty_params)
 
         motif_rng = RNGRoot(config.seed).child("lifecycle_motif")
         motif_family = _sample_motif_family(motif_rng)

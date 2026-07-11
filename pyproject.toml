@@ -162,5 +162,21 @@ ignore_missing_imports = true
 module = ["anthropic", "anthropic.*"]
 ignore_missing_imports = true
 
+# numpy >= 2.5 ships type stubs that use PEP 695 ``type`` statements, which mypy
+# rejects as a syntax error when parsing them under our 3.11 target (``Type
+# statement is only supported in Python 3.12 and greater``) — it aborts before
+# checking any of our code.  ``ignore_missing_imports`` does NOT help (the stub
+# is present, not missing).  ``follow_imports = skip`` alone does NOT help
+# either: by default mypy still follows — and thus parses — ``.pyi`` stub files,
+# so the parse-time syntax error still fires.  ``follow_imports_for_stubs`` is
+# what makes ``skip`` apply to numpy's stubs too, so mypy never parses them
+# (numpy symbols become ``Any``).  We keep the 3.11 target so our own code stays
+# checked for 3.11 compatibility.  Verified against mypy 2.2.0 + numpy 2.5.1.
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true
+ignore_missing_imports = true
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

@@ -85,57 +85,24 @@ class LeadScoringScheme:
     def _resolve_difficulty(
         config: GenerationConfig,
     ) -> tuple[GenerationConfig, dict | None]:
-        """Attach :class:`DifficultyParams` to *config* and return category-latent
-        correlations from the active difficulty profile.
+        """Attach :class:`DifficultyParams` to *config* and return the active
+        profile's category-latent correlations.
 
-        Returns ``(config, None)`` unchanged if the recipe has no
-        difficulty-profiles file (e.g. ad-hoc configs in tests).
+        Delegates recipe/profile resolution to the shared
+        :func:`leadforge.core.difficulty.resolve_difficulty_params`; the
+        category-latent correlations are a lead-scoring-only extra read from the
+        returned profile dict.  Returns ``(config, None)`` unchanged when the
+        recipe declares no difficulty profiles (e.g. ad-hoc configs in tests).
         """
-        from leadforge.api.recipes import Recipe
-        from leadforge.core.models import DifficultyParams
-        from leadforge.recipes.registry import load_recipe
+        from leadforge.core.difficulty import resolve_difficulty_params
 
-        try:
-            raw = load_recipe(config.recipe_id)
-            recipe = Recipe.from_dict(raw)
-            profiles = recipe.load_difficulty_profiles()
-        except (FileNotFoundError, KeyError):
+        params, profile = resolve_difficulty_params(config)
+        if params is None:
             return config, None
-
-        profile = profiles.get(config.difficulty.value, {})
-        category_latent_correlations = profile.get("category_latent_correlations")
-
-        # All keys are required — a missing key indicates a malformed profile
-        # YAML and should fail loudly rather than silently defaulting.
-        required_keys = (
-            "signal_strength",
-            "noise_scale",
-            "missing_rate",
-            "outlier_rate",
-            "conversion_rate_range",
-            "committee_friction",
+        category_latent_correlations = (
+            profile.get("category_latent_correlations") if profile else None
         )
-        missing = [k for k in required_keys if k not in profile]
-        if missing:
-            from leadforge.core.exceptions import InvalidRecipeError
-
-            raise InvalidRecipeError(
-                f"Difficulty profile '{config.difficulty.value}' is missing "
-                f"required keys: {missing}"
-            )
-        cr_range = profile["conversion_rate_range"]
-        difficulty_params = DifficultyParams(
-            signal_strength=profile["signal_strength"],
-            noise_scale=profile["noise_scale"],
-            missing_rate=profile["missing_rate"],
-            outlier_rate=profile["outlier_rate"],
-            conversion_rate_lo=cr_range[0],
-            conversion_rate_hi=cr_range[1],
-            committee_friction=profile["committee_friction"],
-        )
-        return dataclasses.replace(config, difficulty_params=difficulty_params), (
-            category_latent_correlations
-        )
+        return dataclasses.replace(config, difficulty_params=params), category_latent_correlations
 
     def write_bundle(
         self,
