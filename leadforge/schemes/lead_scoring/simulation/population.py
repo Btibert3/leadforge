@@ -186,6 +186,7 @@ def build_population(
         bias=bias,
         rng=root.child("population_accounts"),
         base_date=base_date,
+        lead_creation_window_days=config.lead_creation_window_days,
     )
 
     contacts, cont_latents = _generate_contacts(
@@ -234,6 +235,7 @@ def _generate_accounts(
     bias: dict[str, float],
     rng: random.Random,
     base_date: date = _WORLD_BASE_DATE,
+    lead_creation_window_days: int = 30,
 ) -> tuple[list[AccountRow], dict[str, dict[str, float]]]:
     industries = list(narrative.market.icp_industries)
     geographies = list(narrative.market.geographies)
@@ -252,8 +254,11 @@ def _generate_accounts(
             _PROCESS_MATURITY_BANDS, weights=_PROCESS_MATURITY_BAND_WEIGHTS, k=1
         )[0]
 
-        days_before = rng.randint(30, 730)
-        created_at = (base_date - timedelta(days=days_before)).isoformat()
+        # Spread accounts from 180 days before base_date through the full lead
+        # creation window so new accounts keep arriving throughout the simulation.
+        # ~26% land pre-base (realism); ~74% created during the active window.
+        days_offset = rng.randint(-180, lead_creation_window_days)
+        created_at = (base_date + timedelta(days=days_offset)).isoformat()
 
         rows.append(
             AccountRow(
