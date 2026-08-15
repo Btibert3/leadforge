@@ -80,12 +80,15 @@ intermediate:
     # lead_source → latent_account_fit (not engagement_propensity) so the boost
     # lands on a latent that actually carries weight in the conversion hazard.
     # Partner referrals bring pre-qualified, well-fit accounts; cold outbound skews lower.
+    # lead_source → latent_contact_authority: partner referrals arrive pre-qualified
+    # with a champion already engaged; cold SDR outreach starts with whoever answers.
+    # Contact-level trait — maps cleanly since each contact has one primary source.
     lead_source:
-      latent_trait: latent_account_fit
+      latent_trait: latent_contact_authority
       boosts:
-        sdr_outbound: -0.14
-        inbound_marketing: 0.06
-        partner_referral: 0.22
+        sdr_outbound: -0.28
+        inbound_marketing: 0.08
+        partner_referral: 0.38
     # Stronger boosts — latent_budget_readiness has weight 1.0 in the hazard,
     # so we need larger deltas to produce visible spread.
     process_maturity_band:

@@ -500,17 +500,35 @@ def _apply_category_latent_correlations(
                         traits[trait] = max(0.0, min(1.0, traits[trait] + boost))
 
         else:
-            # Lead-level fields (e.g. lead_source) — adjust linked contact latents.
-            # Deduplicate by contact_id: use the first lead's value to avoid
-            # stacking boosts when multiple leads share a contact.
-            seen_contacts: set[str] = set()
+            # Lead-level fields (e.g. lead_source) — route boost to whichever
+            # latent registry actually holds the target trait.  Account-level
+            # traits (latent_account_fit, latent_budget_readiness, etc.) must
+            # be written to account_latents via the lead's account_id; contact-
+            # level traits go to contact_latents as before.
+            #
+            # Deduplicate by the target entity id to avoid stacking boosts when
+            # multiple leads share the same contact or account.
+            seen_entities: set[str] = set()
             for lead in result.leads:
-                if lead.contact_id in seen_contacts:
+                # Determine target registry and entity id from the trait location.
+                sample_account = next(iter(lat.account_latents.values()), {})
+                use_account = trait in sample_account
+
+                entity_id = lead.account_id if use_account else lead.contact_id
+                if entity_id in seen_entities:
                     continue
-                seen_contacts.add(lead.contact_id)
+                seen_entities.add(entity_id)
+
                 value = getattr(lead, field_name, None)
                 boost = boosts.get(str(value), 0.0) if value is not None else 0.0
-                if boost and lead.contact_id in lat.contact_latents:
+                if not boost:
+                    continue
+
+                if use_account and lead.account_id in lat.account_latents:
+                    traits = lat.account_latents[lead.account_id]
+                    if trait in traits:
+                        traits[trait] = max(0.0, min(1.0, traits[trait] + boost))
+                elif not use_account and lead.contact_id in lat.contact_latents:
                     traits = lat.contact_latents[lead.contact_id]
                     if trait in traits:
                         traits[trait] = max(0.0, min(1.0, traits[trait] + boost))
