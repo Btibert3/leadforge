@@ -77,25 +77,55 @@ intermediate:
         "$10M-$50M": 0.0
         "$50M-$200M": 0.15
         "$200M+": 0.27
+    # lead_source → latent_account_fit (not engagement_propensity) so the boost
+    # lands on a latent that actually carries weight in the conversion hazard.
+    # Partner referrals bring pre-qualified, well-fit accounts; cold outbound skews lower.
     lead_source:
-      latent_trait: latent_engagement_propensity
+      latent_trait: latent_account_fit
       boosts:
-        sdr_outbound: -0.12
-        inbound_marketing: 0.07
-        partner_referral: 0.18
+        sdr_outbound: -0.14
+        inbound_marketing: 0.06
+        partner_referral: 0.22
+    # Stronger boosts — latent_budget_readiness has weight 1.0 in the hazard,
+    # so we need larger deltas to produce visible spread.
     process_maturity_band:
       latent_trait: latent_budget_readiness
       boosts:
-        low: -0.18
+        low: -0.28
         medium: 0.05
-        high: 0.22
+        high: 0.32
     industry:
       latent_trait: latent_account_fit
       boosts:
-        life_sciences: 0.12
-        financial_services: 0.08
+        life_sciences: 0.14
+        financial_services: 0.10
         professional_services: 0.02
-        healthcare_non_clinical: -0.05
+        healthcare_non_clinical: -0.08
+    # buyer_role → latent_contact_authority: champion (full-cycle internal advocate)
+    # should convert highest; end_user lowest (no authority to close).
+    buyer_role:
+      latent_trait: latent_contact_authority
+      boosts:
+        champion: 0.22
+        economic_buyer: 0.10
+        technical_evaluator: -0.05
+        end_user: -0.18
+    # employee_band → latent_account_fit: mid-market sweet spot (500-999) for
+    # procurement automation; very small and very large companies are harder closes.
+    employee_band:
+      latent_trait: latent_account_fit
+      boosts:
+        "200-499": -0.08
+        "500-999": 0.15
+        "1000-1999": 0.10
+        "2000+": -0.05
+    # region → latent_account_fit: Northeast gets a slight edge — Boston-based
+    # vendor with regional network and brand recognition.
+    region:
+      latent_trait: latent_account_fit
+      boosts:
+        Northeast: 0.10
+        US: -0.05
 
 advanced:
   description: >
