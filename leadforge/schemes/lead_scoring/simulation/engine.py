@@ -119,6 +119,10 @@ _TOUCH_TYPES = ("email", "call", "linkedin_message", "content_download", "webina
 _TOUCH_TYPE_WEIGHTS = (0.38, 0.18, 0.15, 0.18, 0.11)
 
 _SESSION_TYPES = ("website", "pricing_page", "demo_page")
+# Session type weights by funnel stage context.
+# Early-stage leads mostly browse; pricing/demo pages appear at deeper stages.
+_SESSION_TYPE_WEIGHTS_EARLY = (0.75, 0.20, 0.05)   # pre-SQL
+_SESSION_TYPE_WEIGHTS_LATE  = (0.40, 0.42, 0.18)   # SQL and beyond
 _ACTIVITY_TYPES = ("call", "email", "meeting", "demo")
 _ACTIVITY_OUTCOMES = (
     "connected",
@@ -352,7 +356,11 @@ def simulate_world(
                         session_id=make_id(ID_PREFIXES["session"], session_ctr),
                         lead_id=lead.lead_id,
                         session_timestamp=event_date,
-                        session_type=event_rng.choice(_SESSION_TYPES),
+                        session_type=event_rng.choices(
+                            _SESSION_TYPES,
+                            weights=_SESSION_TYPE_WEIGHTS_LATE if at_late_stage else _SESSION_TYPE_WEIGHTS_EARLY,
+                            k=1,
+                        )[0],
                         page_views=event_rng.randint(1, 10),
                         pricing_page_views=event_rng.randint(0, 2) if at_late_stage else 0,
                         demo_page_views=event_rng.randint(0, 2) if at_demo_stage else 0,

@@ -49,7 +49,7 @@ class LeadScoringScheme:
         from leadforge.schemes.lead_scoring.simulation.population import build_population
         from leadforge.schemes.lead_scoring.structure.sampler import sample_hidden_graph
 
-        latent_touch_intensity = bool(options.get("latent_touch_intensity", False))
+        latent_touch_intensity = bool(options.get("latent_touch_intensity", True))
 
         rng_root = RNGRoot(config.seed)
         world_graph = sample_hidden_graph(rng_root)
