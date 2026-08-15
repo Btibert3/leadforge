@@ -126,7 +126,7 @@ _TOUCH_BASE_RATES: dict[str, float] = {
     "demo_trial_mediated": 0.60,
     # Tuned for 90-day prediction window: target ~10-20 touches in first 90
     # days for an actively engaged lead, ~4-8 for a cold lead.
-    "buying_committee_friction": 0.10,
+    "buying_committee_friction": 0.25,
 }
 
 # Latent weights for touch intensity (LatentDecayIntensity) per motif family.
