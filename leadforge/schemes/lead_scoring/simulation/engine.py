@@ -124,6 +124,8 @@ _SESSION_TYPES = ("website", "pricing_page", "demo_page")
 _SESSION_TYPE_WEIGHTS_EARLY = (0.75, 0.20, 0.05)   # pre-SQL
 _SESSION_TYPE_WEIGHTS_LATE  = (0.40, 0.42, 0.18)   # SQL and beyond
 _ACTIVITY_TYPES = ("call", "email", "meeting", "demo")
+# Emails dominate B2B sales cadences; demos are rarest (require prior qualification)
+_ACTIVITY_TYPE_WEIGHTS = (0.30, 0.40, 0.18, 0.12)
 _ACTIVITY_OUTCOMES = (
     "connected",
     "no_answer",
@@ -377,7 +379,7 @@ def simulate_world(
                         lead_id=lead.lead_id,
                         rep_id=lead.owner_rep_id,
                         activity_timestamp=event_date,
-                        activity_type=(act_type := event_rng.choice(_ACTIVITY_TYPES)),
+                        activity_type=(act_type := event_rng.choices(_ACTIVITY_TYPES, weights=_ACTIVITY_TYPE_WEIGHTS, k=1)[0]),
                         activity_outcome=event_rng.choices(
                             _ACTIVITY_OUTCOMES,
                             weights=_ACTIVITY_OUTCOME_WEIGHTS[act_type],
