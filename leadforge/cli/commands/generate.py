@@ -50,6 +50,16 @@ def generate(
         "--snapshot-day",
         help="Override recipe default snapshot day for windowed feature aggregation.",
     ),
+    world_base_date: str | None = typer.Option(
+        None,
+        "--world-base-date",
+        help="ISO date (YYYY-MM-DD) for the start of lead creation. Defaults to 2024-01-01.",
+    ),
+    lead_creation_window_days: int | None = typer.Option(
+        None,
+        "--lead-creation-window-days",
+        help="Spread lead creation uniformly across this many days from world-base-date.",
+    ),
     override: str | None = typer.Option(
         None, "--override", help="Path to a YAML config override file."
     ),
@@ -90,6 +100,8 @@ def generate(
             primary_task=primary_task,
             label_window_days=label_window_days,
             snapshot_day=snapshot_day,
+            world_base_date=world_base_date,
+            lead_creation_window_days=lead_creation_window_days,
             override=override_dict,
         )
     except (LeadforgeError, ValueError) as exc:

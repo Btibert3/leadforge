@@ -60,6 +60,7 @@ from leadforge.schemes.lead_scoring.entities import (
     OpportunityRow,
     SalesActivityRow,
     SessionRow,
+    StageTransitionRow,
     SubscriptionRow,
     TouchRow,
 )
@@ -158,6 +159,7 @@ class SimulationResult:
     opportunities: list[OpportunityRow] = field(default_factory=list)
     customers: list[CustomerRow] = field(default_factory=list)
     subscriptions: list[SubscriptionRow] = field(default_factory=list)
+    stage_history: list[StageTransitionRow] = field(default_factory=list)
 
 
 # ---------------------------------------------------------------------------
@@ -479,6 +481,22 @@ def simulate_world(
                     )
                 )
 
+    # Build lead_stage_history from each lead's recorded transitions.
+    stage_history: list[StageTransitionRow] = []
+    for lead in population.leads:
+        state = states[lead.lead_id]
+        lead_date = lead_dates[lead.lead_id]
+        for from_stage, to_stage, day in state.stage_history:
+            transition_date = (lead_date + timedelta(days=day)).isoformat()
+            stage_history.append(
+                StageTransitionRow(
+                    lead_id=lead.lead_id,
+                    from_stage=from_stage,
+                    to_stage=to_stage,
+                    transition_date=transition_date,
+                )
+            )
+
     return SimulationResult(
         leads=updated_leads,
         touches=touches,
@@ -487,6 +505,7 @@ def simulate_world(
         opportunities=opportunities,
         customers=customers,
         subscriptions=subscriptions,
+        stage_history=stage_history,
     )
 
 

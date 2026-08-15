@@ -127,6 +127,13 @@ def _full_horizon_dict() -> dict[str, pd.DataFrame]:
             }
         ]
     )
+    lead_stage_history = pd.DataFrame(
+        [
+            {"lead_id": "lead_1", "from_stage": "mql", "to_stage": "sal", "transition_date": _ts(3)},
+            {"lead_id": "lead_1", "from_stage": "sal", "to_stage": "sql", "transition_date": _ts(15)},
+            {"lead_id": "lead_2", "from_stage": "mql", "to_stage": "sal", "transition_date": _ts(8)},
+        ]
+    )
     return {
         "accounts": accounts,
         "contacts": contacts,
@@ -137,6 +144,7 @@ def _full_horizon_dict() -> dict[str, pd.DataFrame]:
         "opportunities": opportunities,
         "customers": customers,
         "subscriptions": subscriptions,
+        "lead_stage_history": lead_stage_history,
     }
 
 
@@ -236,6 +244,7 @@ def test_canonical_output_table_order() -> None:
         "sessions",
         "sales_activities",
         "opportunities",
+        "lead_stage_history",
     ]
 
 

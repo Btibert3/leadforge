@@ -9,7 +9,7 @@ rows (opportunity, customer, subscription).
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 # Funnel stages that are at or past the SQL qualification gate.
 # Used by advance_stage() to record sql_day regardless of the exact
@@ -56,6 +56,9 @@ class LeadSimState:
     """First day the lead entered ``sql`` or any deeper funnel stage.
     Used to anchor opportunity creation timestamps."""
 
+    stage_history: list[tuple[str, str, int]] = field(default_factory=list)
+    """Ordered list of (from_stage, to_stage, day) tuples for every transition."""
+
     @property
     def is_terminal(self) -> bool:
         """``True`` once the lead has converted or churned."""
@@ -74,6 +77,7 @@ class LeadSimState:
             new_stage: The funnel stage to transition into.
             day: Current 0-based day index in the simulation horizon.
         """
+        self.stage_history.append((self.current_stage, new_stage, day))
         self.current_stage = new_stage
         self.dwell_days = 0
         if new_stage in _SQL_OR_DEEPER and self.sql_day is None:
@@ -81,12 +85,14 @@ class LeadSimState:
 
     def mark_converted(self, day: int) -> None:
         """Record a ``closed_won`` conversion event on *day*."""
+        self.stage_history.append((self.current_stage, "closed_won", day))
         self.converted = True
         self.conversion_day = day
         self.current_stage = "closed_won"
 
     def mark_churned(self, day: int) -> None:
         """Record a ``closed_lost`` churn event on *day*."""
+        self.stage_history.append((self.current_stage, "closed_lost", day))
         self.churned = True
         self.churn_day = day
         self.current_stage = "closed_lost"

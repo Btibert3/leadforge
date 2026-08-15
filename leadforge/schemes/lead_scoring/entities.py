@@ -327,6 +327,41 @@ class SubscriptionRow:
 
 
 # ---------------------------------------------------------------------------
+# lead_stage_history (BA882 fork)
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class StageTransitionRow:
+    """One row in the ``lead_stage_history`` table.
+
+    Captures every funnel stage transition as it occurs during simulation.
+    Filtered by ``transition_date`` the API reveals funnel state without
+    exposing the final ``current_stage`` outcome column.
+    """
+
+    TABLE_NAME: ClassVar[str] = "lead_stage_history"
+    DTYPE_MAP: ClassVar[dict[str, str]] = {
+        "lead_id": "string",
+        "from_stage": "string",
+        "to_stage": "string",
+        "transition_date": "string",
+    }
+
+    lead_id: str
+    from_stage: str
+    to_stage: str
+    transition_date: str  # ISO date
+
+    def to_dict(self) -> dict[str, Any]:
+        return {f.name: getattr(self, f.name) for f in fields(self)}
+
+    @classmethod
+    def empty_dataframe(cls) -> pd.DataFrame:
+        return make_empty_dataframe(cls.DTYPE_MAP)
+
+
+# ---------------------------------------------------------------------------
 # Lead-scoring catalog
 # ---------------------------------------------------------------------------
 
@@ -340,6 +375,7 @@ ALL_ROW_TYPES: tuple[type[EntityRowProtocol], ...] = (
     OpportunityRow,
     CustomerRow,
     SubscriptionRow,
+    StageTransitionRow,
 )
 
 TABLE_NAMES: tuple[str, ...] = tuple(cls.TABLE_NAME for cls in ALL_ROW_TYPES)

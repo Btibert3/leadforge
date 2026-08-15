@@ -152,8 +152,8 @@ def test_lead_rows_parquet_roundtrip(tmp_path: Path) -> None:
 # ---------------------------------------------------------------------------
 
 
-def test_all_row_types_covers_nine_tables() -> None:
-    assert len(ALL_ROW_TYPES) == 9
+def test_all_row_types_covers_expected_tables() -> None:
+    assert len(ALL_ROW_TYPES) == 10
 
 
 def test_table_names_unique() -> None:
@@ -171,5 +171,6 @@ def test_table_names_expected_values() -> None:
         "opportunities",
         "customers",
         "subscriptions",
+        "lead_stage_history",
     }
     assert set(TABLE_NAMES) == expected

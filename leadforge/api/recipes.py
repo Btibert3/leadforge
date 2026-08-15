@@ -160,6 +160,8 @@ class Recipe:
         primary_task: str | None = None,
         label_window_days: int | None = None,
         snapshot_day: int | None = None,
+        world_base_date: str | None = None,
+        lead_creation_window_days: int | None = None,
         output_path: str = _MISSING,  # type: ignore[assignment]
         override: dict[str, Any] | None = None,
     ) -> GenerationConfig:
@@ -198,6 +200,8 @@ class Recipe:
             "n_customers": pkg["n_customers"],
             "early_tenure_weeks": pkg["early_tenure_weeks"],
             "observation_date": pkg["observation_date"],
+            "world_base_date": pkg["world_base_date"],
+            "lead_creation_window_days": pkg["lead_creation_window_days"],
         }
 
         # Layer 3 — recipe defaults
@@ -229,6 +233,8 @@ class Recipe:
                 "n_customers",
                 "early_tenure_weeks",
                 "observation_date",
+                "world_base_date",
+                "lead_creation_window_days",
             ):
                 if key in override:
                     resolved[key] = override[key]
@@ -259,6 +265,10 @@ class Recipe:
             resolved["label_window_days"] = label_window_days
         if snapshot_day is not None:
             resolved["snapshot_day"] = snapshot_day
+        if world_base_date is not None:
+            resolved["world_base_date"] = world_base_date
+        if lead_creation_window_days is not None:
+            resolved["lead_creation_window_days"] = lead_creation_window_days
 
         try:
             mode = ExposureMode(resolved["exposure_mode"])
@@ -302,6 +312,8 @@ class Recipe:
             n_customers=resolved["n_customers"],
             early_tenure_weeks=resolved["early_tenure_weeks"],
             observation_date=resolved["observation_date"],
+            world_base_date=resolved["world_base_date"],
+            lead_creation_window_days=resolved["lead_creation_window_days"],
         )
 
     # ------------------------------------------------------------------ #

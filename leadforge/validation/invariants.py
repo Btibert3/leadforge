@@ -225,11 +225,14 @@ def check_exposure_monotonicity(student_bundle: Path, instructor_bundle: Path) -
     # in pandas, even on the same float), and the natural PK is enough
     # to assert ``student.rows ⊆ instructor.rows`` since student rows
     # were derived directly from instructor by row-filtering.
-    snapshot_filtered_pks: dict[str, str] = {
+    snapshot_filtered_pks: dict[str, str | None] = {
         "touches": "touch_id",
         "sessions": "session_id",
         "sales_activities": "activity_id",
         "opportunities": "opportunity_id",
+        # lead_stage_history has no single-column PK; use None to skip the
+        # row-subset-by-key check (row count ordering is still verified above).
+        "lead_stage_history": None,
     }
 
     student_tables = (
@@ -299,7 +302,11 @@ def check_exposure_monotonicity(student_bundle: Path, instructor_bundle: Path) -
             # depending on column-by-column equality (which is fragile
             # under NaN).
             pk = snapshot_filtered_pks.get(table_name)
-            if pk is None or pk not in s_df.columns or pk not in i_df.columns:
+            if pk is None:
+                # No single-column PK for this table; row count ordering
+                # (student ≤ instructor) was already verified above.
+                continue
+            if pk not in s_df.columns or pk not in i_df.columns:
                 errors.append(
                     f"Table {table}: snapshot-filtered table missing expected "
                     f"primary key {pk!r}; cannot verify row-subset"

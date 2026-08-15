@@ -56,6 +56,8 @@ class Generator:
         primary_task: str | None = None,
         label_window_days: int | None = None,
         snapshot_day: int | None = None,
+        world_base_date: str | None = None,
+        lead_creation_window_days: int | None = None,
         output_path: str = _MISSING,  # type: ignore[assignment]
         override: dict[str, Any] | None = None,
     ) -> Generator:
@@ -113,6 +115,8 @@ class Generator:
             primary_task=primary_task,
             label_window_days=label_window_days,
             snapshot_day=snapshot_day,
+            world_base_date=world_base_date,
+            lead_creation_window_days=lead_creation_window_days,
             output_path=output_path,
             override=override,
         )

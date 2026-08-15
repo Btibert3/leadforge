@@ -138,6 +138,13 @@ _CHANNEL_TO_SHARE_ATTR: dict[str, str] = {
 # ---------------------------------------------------------------------------
 
 
+def _world_base_date(config: GenerationConfig) -> date:
+    """Return the lead-creation base date from config, falling back to the package default."""
+    if config.world_base_date is not None:
+        return date.fromisoformat(config.world_base_date)
+    return _WORLD_BASE_DATE
+
+
 def build_population(
     config: GenerationConfig,
     narrative: NarrativeSpec,
@@ -171,11 +178,14 @@ def build_population(
     root = RNGRoot(config.seed)
     bias = _MOTIF_LATENT_BIAS.get(world_graph.motif_family, {})
 
+    base_date = _world_base_date(config)
+
     accounts, acct_latents = _generate_accounts(
         n=config.n_accounts,
         narrative=narrative,
         bias=bias,
         rng=root.child("population_accounts"),
+        base_date=base_date,
     )
 
     contacts, cont_latents = _generate_contacts(
@@ -192,6 +202,8 @@ def build_population(
         narrative=narrative,
         bias=bias,
         rng=root.child("population_leads"),
+        base_date=base_date,
+        lead_creation_window_days=config.lead_creation_window_days,
     )
 
     result = PopulationResult(
@@ -221,6 +233,7 @@ def _generate_accounts(
     narrative: NarrativeSpec,
     bias: dict[str, float],
     rng: random.Random,
+    base_date: date = _WORLD_BASE_DATE,
 ) -> tuple[list[AccountRow], dict[str, dict[str, float]]]:
     industries = list(narrative.market.icp_industries)
     geographies = list(narrative.market.geographies)
@@ -240,7 +253,7 @@ def _generate_accounts(
         )[0]
 
         days_before = rng.randint(30, 730)
-        created_at = (_WORLD_BASE_DATE - timedelta(days=days_before)).isoformat()
+        created_at = (base_date - timedelta(days=days_before)).isoformat()
 
         rows.append(
             AccountRow(
@@ -342,6 +355,8 @@ def _generate_leads(
     narrative: NarrativeSpec,
     bias: dict[str, float],
     rng: random.Random,
+    base_date: date = _WORLD_BASE_DATE,
+    lead_creation_window_days: int = 30,
 ) -> tuple[list[LeadRow], dict[str, dict[str, float]]]:
     channels, channel_weights = _channel_weights(narrative)
     rep_ids = [make_id(ID_PREFIXES["rep"], i) for i in range(1, _N_REPS + 1)]
@@ -354,8 +369,8 @@ def _generate_leads(
         contact = rng.choice(contacts)
 
         lead_source = rng.choices(channels, weights=channel_weights, k=1)[0]
-        days_offset = rng.randint(0, 29)
-        lead_created_at = (_WORLD_BASE_DATE + timedelta(days=days_offset)).isoformat()
+        days_offset = rng.randint(0, max(0, lead_creation_window_days - 1))
+        lead_created_at = (base_date + timedelta(days=days_offset)).isoformat()
         owner_rep_id = rng.choice(rep_ids)
 
         rows.append(

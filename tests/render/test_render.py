@@ -71,6 +71,7 @@ class TestToDataframes:
             "opportunities",
             "customers",
             "subscriptions",
+            "lead_stage_history",
         }
         assert set(dfs.keys()) == expected
 

@@ -101,6 +101,7 @@ SNAPSHOT_FILTERED_TABLES: Final[tuple[tuple[str, str], ...]] = (
     ("sessions", "session_timestamp"),
     ("sales_activities", "activity_timestamp"),
     ("opportunities", "created_at"),
+    ("lead_stage_history", "transition_date"),
 )
 
 

@@ -217,7 +217,7 @@ def test_lifecycle_shares_account_row() -> None:
 
 
 def test_lead_scoring_catalog_unchanged() -> None:
-    assert len(ALL_ROW_TYPES) == 9
+    assert len(ALL_ROW_TYPES) == 10
     assert set(TABLE_NAMES) == {
         "accounts",
         "contacts",
@@ -228,6 +228,7 @@ def test_lead_scoring_catalog_unchanged() -> None:
         "opportunities",
         "customers",
         "subscriptions",
+        "lead_stage_history",
     }
 
 

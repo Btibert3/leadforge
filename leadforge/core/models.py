@@ -73,6 +73,15 @@ class GenerationConfig:
     package_version: str = field(default_factory=lambda: __version__)
     difficulty_params: DifficultyParams | None = None
 
+    # --- lead creation window (BA882 fork) ---------------------------------
+    # world_base_date: ISO date (YYYY-MM-DD) for the first possible lead
+    #   creation date.  None keeps the package default (2024-01-01).
+    # lead_creation_window_days: leads are created uniformly at random within
+    #   this many days starting from world_base_date.  Default (30) preserves
+    #   the upstream behaviour; set to e.g. 365 to spread across a full year.
+    world_base_date: str | None = None
+    lead_creation_window_days: int = 30
+
     # --- lifecycle scheme (b2b_saas_ltv_v1) config -------------------------
     # Consumed only by the lifecycle generation scheme; the lead-scoring scheme
     # ignores these.  They live on the shared config (like ``n_leads`` /
@@ -144,6 +153,21 @@ class GenerationConfig:
                     f"anchored after the label closes would re-introduce "
                     f"structural leakage."
                 )
+        _require_positive_int(self.lead_creation_window_days, "lead_creation_window_days")
+        if self.world_base_date is not None:
+            if not isinstance(self.world_base_date, str):
+                raise InvalidConfigError(
+                    f"world_base_date must be an ISO date string or None, "
+                    f"got {type(self.world_base_date).__name__!r}"
+                )
+            from datetime import date as _date
+            try:
+                _date.fromisoformat(self.world_base_date)
+            except ValueError as exc:
+                raise InvalidConfigError(
+                    f"world_base_date must be an ISO date (YYYY-MM-DD), "
+                    f"got {self.world_base_date!r}"
+                ) from exc
         # Coerce string enums supplied as plain strings
         if not isinstance(self.exposure_mode, ExposureMode):
             try:

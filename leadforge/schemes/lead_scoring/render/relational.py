@@ -22,6 +22,7 @@ from leadforge.schemes.lead_scoring.entities import (
     OpportunityRow,
     SalesActivityRow,
     SessionRow,
+    StageTransitionRow,
     SubscriptionRow,
     TouchRow,
 )
@@ -50,6 +51,7 @@ _TABLE_SOURCES: dict[str, _TableSource] = {
     OpportunityRow.TABLE_NAME: _TableSource(OpportunityRow, "simulation", "opportunities"),
     CustomerRow.TABLE_NAME: _TableSource(CustomerRow, "simulation", "customers"),
     SubscriptionRow.TABLE_NAME: _TableSource(SubscriptionRow, "simulation", "subscriptions"),
+    StageTransitionRow.TABLE_NAME: _TableSource(StageTransitionRow, "simulation", "stage_history"),
 }
 
 
