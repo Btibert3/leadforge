@@ -4,19 +4,19 @@
 # vertical. Simulation layers may override individual fields via config.
 
 company:
-  name: "Veridian Technologies"
-  founded_year: 2017
-  hq_city: "Austin"
+  name: "Archway Software"
+  founded_year: 2022
+  hq_city: "Boston"
   hq_country: "US"
   stage: "Series B"
-  employee_range: [80, 150]
+  employee_range: [90, 160]
 
 product:
-  name: "Veridian Procure"
+  name: "Archway Procure"
   category: "Procurement & AP Automation"
   deployment: "cloud_saas"
   pricing_model: "per_seat_annual"
-  acv_range_usd: [18000, 120000]
+  acv_range_usd: [20000, 130000]
   contract_terms_months: [12, 24, 36]
   free_trial_available: true
   demo_available: true
@@ -24,13 +24,13 @@ product:
 market:
   icp_employee_range: [200, 2000]
   icp_industries:
-    - manufacturing
-    - logistics
+    - life_sciences
+    - financial_services
     - professional_services
     - healthcare_non_clinical
-  geographies: [US, UK]
-  avg_deal_size_usd: 42000
-  avg_sales_cycle_days: 45
+  geographies: [US, Northeast]
+  avg_deal_size_usd: 45000
+  avg_sales_cycle_days: 48
 
 gtm_motion:
   channels:
@@ -50,6 +50,7 @@ personas:
       - "VP of Finance"
     decision_authority: economic_buyer
     typical_involvement: late_stage
+    sampling_weight: 1.5
 
   - role: ap_manager
     title_variants:
@@ -59,6 +60,7 @@ personas:
       - "AP Lead"
     decision_authority: champion
     typical_involvement: full_cycle
+    sampling_weight: 2.5
 
   - role: it_director
     title_variants:
@@ -68,6 +70,7 @@ personas:
       - "VP Engineering"
     decision_authority: technical_evaluator
     typical_involvement: mid_to_late
+    sampling_weight: 1.0
 
   - role: procurement_manager
     title_variants:
@@ -77,6 +80,7 @@ personas:
       - "Head of Procurement"
     decision_authority: end_user
     typical_involvement: early_to_mid
+    sampling_weight: 2.0
 
 funnel_stages:
   - name: mql

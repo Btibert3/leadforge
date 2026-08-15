@@ -299,6 +299,7 @@ def _generate_contacts(
     rng: random.Random,
 ) -> tuple[list[ContactRow], dict[str, dict[str, float]]]:
     personas = list(narrative.personas)
+    persona_weights = [p.sampling_weight for p in personas]
 
     rows: list[ContactRow] = []
     latents: dict[str, dict[str, float]] = {}
@@ -307,7 +308,7 @@ def _generate_contacts(
         cnt_id = make_id(ID_PREFIXES["contact"], i)
         account = rng.choice(accounts)
 
-        persona = rng.choice(personas)
+        persona = rng.choices(personas, weights=persona_weights, k=1)[0]
         job_title = rng.choice(list(persona.title_variants))
         role_function = persona.role
         buyer_role = persona.decision_authority

@@ -115,6 +115,9 @@ _SALES_ACTIVE_STAGES = frozenset(
 
 # Touch / session / activity catalogues.
 _TOUCH_TYPES = ("email", "call", "linkedin_message", "content_download", "webinar")
+# Realistic B2B touch mix: email-heavy outbound, content/webinar for inbound nurture
+_TOUCH_TYPE_WEIGHTS = (0.38, 0.18, 0.15, 0.18, 0.11)
+
 _SESSION_TYPES = ("website", "pricing_page", "demo_page")
 _ACTIVITY_TYPES = ("call", "email", "meeting", "demo")
 _ACTIVITY_OUTCOMES = (
@@ -124,6 +127,15 @@ _ACTIVITY_OUTCOMES = (
     "meeting_set",
     "demo_completed",
 )
+# Outcome weights conditioned on activity type — calls produce voicemails/no-answers,
+# demos produce completions, emails shouldn't produce voicemails.
+_ACTIVITY_OUTCOME_WEIGHTS: dict[str, tuple[float, ...]] = {
+    #                  connected  no_answer  left_vm  meeting_set  demo_completed
+    "call":           (0.20,      0.35,      0.30,    0.13,        0.02),
+    "email":          (0.28,      0.38,      0.03,    0.21,        0.10),
+    "meeting":        (0.32,      0.12,      0.05,    0.20,        0.31),
+    "demo":           (0.18,      0.07,      0.03,    0.22,        0.50),
+}
 
 # ACV range (lo, hi) in USD by account employee band.
 _EMPLOYEE_ACV_RANGES: dict[str, tuple[int, int]] = {
@@ -318,7 +330,7 @@ def simulate_world(
                         touch_id=make_id(ID_PREFIXES["touch"], touch_ctr),
                         lead_id=lead.lead_id,
                         touch_timestamp=event_date,
-                        touch_type=event_rng.choice(_TOUCH_TYPES),
+                        touch_type=event_rng.choices(_TOUCH_TYPES, weights=_TOUCH_TYPE_WEIGHTS, k=1)[0],
                         touch_channel=lead.first_touch_channel,
                         touch_direction="inbound"
                         if lead.first_touch_channel == "inbound_marketing"
@@ -357,8 +369,12 @@ def simulate_world(
                         lead_id=lead.lead_id,
                         rep_id=lead.owner_rep_id,
                         activity_timestamp=event_date,
-                        activity_type=event_rng.choice(_ACTIVITY_TYPES),
-                        activity_outcome=event_rng.choice(_ACTIVITY_OUTCOMES),
+                        activity_type=(act_type := event_rng.choice(_ACTIVITY_TYPES)),
+                        activity_outcome=event_rng.choices(
+                            _ACTIVITY_OUTCOMES,
+                            weights=_ACTIVITY_OUTCOME_WEIGHTS[act_type],
+                            k=1,
+                        )[0],
                     )
                 )
 

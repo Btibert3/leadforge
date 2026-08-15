@@ -222,6 +222,7 @@ class PersonaSpec:
     title_variants: tuple[str, ...]
     decision_authority: str
     typical_involvement: str
+    sampling_weight: float = 1.0
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> PersonaSpec:
@@ -238,11 +239,17 @@ class PersonaSpec:
             raise InvalidRecipeError(
                 f"personas[].title_variants must be a list of strings, got {title_variants!r}"
             )
+        raw_weight = data.get("sampling_weight", 1.0)
+        if not isinstance(raw_weight, (int, float)) or raw_weight <= 0:
+            raise InvalidRecipeError(
+                f"personas[].sampling_weight must be a positive number, got {raw_weight!r}"
+            )
         return cls(
             role=str(data["role"]),
             title_variants=tuple(title_variants),
             decision_authority=str(data["decision_authority"]),
             typical_involvement=str(data["typical_involvement"]),
+            sampling_weight=float(raw_weight),
         )
 
 

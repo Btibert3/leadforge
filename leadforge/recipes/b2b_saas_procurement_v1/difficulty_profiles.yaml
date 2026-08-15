@@ -57,6 +57,45 @@ intermediate:
   outlier_rate: 0.04
   conversion_rate_range: [0.18, 0.28]
   committee_friction: 0.30
+  # Correlate observable categoricals with latent traits so that segment-level
+  # conversion rates differ meaningfully — without this, all segments convert
+  # at the same ~22% rate and categorical features have near-zero ML signal.
+  # Boosts are smaller than intro to reflect the higher noise level.
+  category_latent_correlations:
+    seniority:
+      latent_trait: latent_contact_authority
+      boosts:
+        individual_contributor: -0.20
+        manager: -0.07
+        director: 0.07
+        vp: 0.17
+        c_suite: 0.28
+    estimated_revenue_band:
+      latent_trait: latent_account_fit
+      boosts:
+        "$1M-$10M": -0.15
+        "$10M-$50M": 0.0
+        "$50M-$200M": 0.15
+        "$200M+": 0.27
+    lead_source:
+      latent_trait: latent_engagement_propensity
+      boosts:
+        sdr_outbound: -0.12
+        inbound_marketing: 0.07
+        partner_referral: 0.18
+    process_maturity_band:
+      latent_trait: latent_budget_readiness
+      boosts:
+        low: -0.18
+        medium: 0.05
+        high: 0.22
+    industry:
+      latent_trait: latent_account_fit
+      boosts:
+        life_sciences: 0.12
+        financial_services: 0.08
+        professional_services: 0.02
+        healthcare_non_clinical: -0.05
 
 advanced:
   description: >
