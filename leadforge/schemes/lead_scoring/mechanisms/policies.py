@@ -124,7 +124,9 @@ _TOUCH_BASE_RATES: dict[str, float] = {
     "intent_dominant": 0.55,
     "sales_execution_sensitive": 0.35,
     "demo_trial_mediated": 0.60,
-    "buying_committee_friction": 0.30,
+    # Tuned for 90-day prediction window: target ~10-20 touches in first 90
+    # days for an actively engaged lead, ~4-8 for a cold lead.
+    "buying_committee_friction": 0.10,
 }
 
 # Latent weights for touch intensity (LatentDecayIntensity) per motif family.
@@ -346,12 +348,16 @@ def assign_mechanisms(
         touch_intensity = LatentDecayIntensity(
             base_rate=touch_rate,
             decay_factor=0.97,
-            floor_rate=0.02,
+            # Low floor so cold leads go nearly silent after decay rather than
+            # sustaining ~1 touch/day for the full 365-day horizon.
+            floor_rate=0.004,
             latent_weights=touch_latent_w,
-            boost=1.2,
+            boost=0.8,
             followup=FollowupRampConfig(
                 boost_after_day=20,
-                boost_factor=10.0,
+                # Reduced from 10.0 — the original 10x ramp was designed for
+                # short horizons; at 365 days it inflated touch counts ~5x.
+                boost_factor=2.0,
                 ramp_days=10,
                 latent_weights=followup_latent_w,
             ),
